@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% block title %}Completed Courses{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Completed Courses</title>
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom-styles.css' %}" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="container mt-4">
+        {% if not is_tutor_viewing %}
+        <h1>My Completed Courses</h1>
+        <div class="mb-3">
+            <a href="{% url 'add_completed_course' %}" class="btn btn-primary">Add Course</a>
+        </div>
+        {% else %}
+        <h1>{{ student.get_full_name }}'s Completed Courses</h1>
+        {% endif %}
+        {% if not is_tutor_viewing %}
+        
+        {% endif %}
+        {% if completed_courses %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th scope="col">Course</th>
+                        <th scope="col">Year</th>
+                        <th scope="col">Semester</th>
+                        <th scope="col">Grade</th>
+                        {% if not is_tutor_viewing %}
+                        <th scope="col">Actions</th>
+                        {% endif %}
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in completed_courses %}
+                    <tr>
+                        <td>{{ course.course.name }}</td>
+                        <td>{{ course.year }}</td>
+                        <td>{{ course.custom_semester }}</td>
+                        <td>
+                            {{ course.grade }}
+                            {% if course.grade == 'F' %}
+                            <div class="text-danger">You need to retake this course</div>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if not is_tutor_viewing %}
+                            <a href="{% url 'edit_completed_course' course.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                            <form action="{% url 'remove_completed_course' course.id %}" method="post" style="display: inline-block;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Remove</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No completed courses added yet.</p>
+        {% endif %}
+{% if is_tutor %}
+<a href="{% url 'tutor_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to Tutor
+    Dashboard</a>
+{% else %}
+<a href="{% url 'student_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to Student
+    Dashboard</a>
+{% endif %}    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+{% endblock %}
+
+</html>

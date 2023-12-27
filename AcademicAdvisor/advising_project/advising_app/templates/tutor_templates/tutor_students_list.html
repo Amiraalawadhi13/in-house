@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Assigned Students List{% endblock %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+
+<head>
+    <title>Students List</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        
+        .list-group-item {
+            background-color: #f8f9fa;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .list-group-item:hover {
+            transform: scale(1.03);
+            background-color: #e2e6ea;
+        }
+
+        .student-info h5 {
+            font-size: 1.4rem;
+            color: #0056b3;
+            margin-bottom: 0.5rem;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header-section">
+            <h2 class="display-4">My Assigned Students</h2>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="row mb-4">
+            <div class="col-md-8 mx-auto">
+                <form method="GET" action="{% url 'tutor_students_list' %}" class="input-group">
+                    <input type="text" class="form-control" placeholder="Search by ID, name, or email"
+                        name="search_query">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-primary" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Student List -->
+        <div class="list-group">
+            {% for assignment in assigned_students %}
+            <div class="list-group-item list-group-item-action flex-column align-items-start">
+                <div class="student-info">
+                    <h5>{{ assignment.student.get_full_name }}</h5>
+                    <small>{{ assignment.student.email }}</small>
+                </div>
+                <p class="mb-1">Student ID: {{ assignment.student.id }}</p>
+                <div class="mt-2">
+                    <a href="{% url 'tutor_student_dashboard_view' assignment.student.id %}"
+                        class="btn btn-secondary btn-sm">View Profile</a>
+                    <button type="button" class="btn btn-primary btn-sm ml-2"
+                        onclick="redirectToMessagePage({{ assignment.student.id }})">Message</button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-students">No students assigned yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function redirectToMessagePage(studentId) {
+            window.location.href = `{% url 'send_message' %}?recipient_id=${studentId}`;
+        }
+    </script>
+</body>
+{% endblock %}
+
+</html>

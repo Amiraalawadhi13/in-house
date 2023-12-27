@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Major Details{% endblock %}
+{% load static %}
+
+{% block content %}
+<link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
+
+<div class="container my-5">
+    <div class="major-detail-container">
+        <div class="detail-header">
+            <h2>{{ major.name }} Details</h2>
+        </div>
+        <div class="detail-info">
+            <p><strong>Major Credit:</strong> {{ major.major_credit }}</p>
+            <p><strong>Major Code:</strong> {{ major.major_code }}</p>
+            <p><strong>Description:</strong> {{ major.description }}</p>
+            <p><strong>School:</strong> {{ major.school.name }}</p>
+        </div>
+
+        <!-- Semester A Courses -->
+        <div class="semester-section">
+            <h3 class="semester-header">Semester A Courses</h3>
+            {% for year, courses in courses_by_year_and_semester.semesterA.items %}
+            <div class="year-header">Year {{ year }}</div>
+            <div class="row">
+                {% for course in courses %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="course-card">
+                        <h5>{{ course.name }}</h5>
+                        <a href="{% url 'course_detail' course.id %}">Discover more</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No courses listed for Year {{ year }} Semester A.</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Semester B Courses -->
+        <div class="semester-section">
+            <h3 class="semester-header">Semester B Courses</h3>
+            {% for year, courses in courses_by_year_and_semester.semesterB.items %}
+            <div class="year-header">Year {{ year }}</div>
+            <div class="row">
+                {% for course in courses %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="course-card">
+                        <h5>{{ course.name }}</h5>
+                        <a href="{% url 'course_detail' course.id %}">Discover more</a>
+                    </div>
+                </div>
+                {% empty %}
+                <p>No courses listed for Year {{ year }} Semester B.</p>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if is_tutor %}
+        <a href="{% url 'tutor_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to Tutor
+            Dashboard</a>
+        {% else %}
+        <a href="{% url 'student_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to Student
+            Dashboard</a>
+        {% endif %}
+        <div class="mt-3">
+            <a href="#" onclick="window.history.back(); return false;" class="btn btn-secondary">Go Back</a>
+        </div>
+    </div>
+    {% endblock %}

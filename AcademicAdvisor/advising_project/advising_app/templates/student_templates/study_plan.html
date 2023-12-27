@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% block title %}Edit Study Plan{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Study Plan</title>
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        .study-plan-container {
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-top: 1rem;
+        }
+
+        h1,
+        h2 {
+            color: #333;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .table {
+            border-collapse: separate;
+            border-spacing: 0 0.5em;
+            font-size: 0.9rem;
+            /* Smaller font size for table content */
+        }
+
+        .table thead th {
+            background-color: #007BFF;
+            color: white;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="container container-fluid study-plan-container">
+        <h1>Edit Study Plan for {{ request.user.get_full_name }}</h1>
+{% if messages %}
+{% for message in messages %}
+<div class="alert {{ message.tags }} alert-dismissible fade show" role="alert">
+    {{ message }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor %}
+{% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="plan_year" class="form-label">Study Plan Year:</label>
+                <input type="number" class="form-control" id="plan_year" name="plan_year" min="{{ current_year }}"
+                    max="{{ current_year|add:4 }}">
+            </div>
+
+            <!-- Compulsory Courses Section -->
+            <h2>Compulsory Courses</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Prerequisites</th>
+                            <th>Credits</th>
+                            <th>NQF Level</th>
+                            <th>Grade</th>
+                            <th>Year</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in compulsory_courses %}
+                        <tr>
+                            <td>{{ course.course_code }}</td>
+                            <td>{{ course.name }}</td>
+                            <td>
+                                {% for prerequisite in course.prerequisites.all %}
+                                {{ prerequisite.course_code }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ course.course_credits }}</td>
+                            <td>{{ course.nqf_lvl }}</td>
+                            <td>
+                                <select name="grade_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Grade</option>
+                                    {% for value, display in grade_choices %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+
+                            </td>
+                            <td>
+                                <input type="number" name="year_{{ course.id }}" data-name="{{ course.name }}"
+                                    min="{{ current_year }}" max="{{ current_year|add:4 }}">
+                            </td>
+                            <td>
+                                <select name="semester_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Semester</option>
+                                    {% for value, display in semester_choices %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <!-- Major Courses Section -->
+            <h2>Major Courses</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Prerequisites</th>
+                            <th>Credits</th>
+                            <th>NQF Level</th>
+                            <th>Grade</th>
+                            <th>Year</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in major_courses %}
+                        <tr>
+                            <td>{{ course.course_code }}</td>
+                            <td>{{ course.name }}</td>
+                            <td>
+                                {% for prerequisite in course.prerequisites.all %}
+                                {{ prerequisite.course_code }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ course.course_credits }}</td>
+                            <td>{{ course.nqf_lvl }}</td>
+                            <td>
+                                <select name="grade_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Grade</option>
+                                    {% for value, display in grade_choices %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="year_{{ course.id }}" data-name="{{ course.name }}"
+                                    min="{{ current_year }}" max="{{ current_year|add:4 }}">
+                            </td>
+                            <td>
+                                <select name="semester_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Semester</option>
+                                    {% for value, display in semester_choices %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <h2>National Requirement Courses</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Prerequisites</th>
+                            <th>Credits</th>
+                            <th>NQF Level</th>
+                            <th>Grade</th>
+                            <th>Year</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in national_requirement_courses %}
+                        <tr>
+                            <td>{{ course.course_code }}</td>
+                            <td>{{ course.name }}</td>
+                            <td>
+                                {% for prerequisite in course.prerequisites.all %}
+                                {{ prerequisite.course_code }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ course.course_credits }}</td>
+                            <td>{{ course.nqf_lvl }}</td>
+                            <td>
+                                <select name="grade_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Grade</option>
+                                    {% for value, display in grade_choices %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="year_{{ course.id }}" data-name="{{ course.name }}"
+                                    min="{{ current_year }}" max="{{ current_year|add:4 }}">
+                            </td>
+                            <td>
+                                <select name="semester_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Semester</option>
+                                    <option value="semesterA">Semester A</option>
+                                    <option value="semesterB">Semester B</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <h2>English Courses</h2>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Prerequisites</th>
+                            <th>Credits</th>
+                            <th>NQF Level</th>
+                            <th>Grade</th>
+                            <th>Year</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in english_courses %}
+                        <tr>
+                            <td>{{ course.course_code }}</td>
+                            <td>{{ course.name }}</td>
+                            <td>
+                                {% for prerequisite in course.prerequisites.all %}
+                                {{ prerequisite.course_code }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ course.course_credits }}</td>
+                            <td>{{ course.nqf_lvl }}</td>
+
+                            <td>
+                                <select name="grade_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Grade</option>
+                                    {% for value, display in grade_choices %}
+                                    <option value="{{ value }}">{{ display }}</option>
+                                    {% endfor %}
+                                </select>
+                            </td>
+                            <td>
+                                <input type="number" name="year_{{ course.id }}" data-name="{{ course.name }}"
+                                    min="{{ current_year }}" max="{{ current_year|add:4 }}">
+                            </td>
+                            <td>
+                                <select name="semester_{{ course.id }}" data-name="{{ course.name }}">
+                                    <option value="">Select Semester</option>
+                                    <option value="semesterA">Semester A</option>
+                                    <option value="semesterB">Semester B</option>
+                                </select>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <h2>Elective Courses</h2>
+            <table class="table" id="elective-courses-table">
+                <thead>
+                    <tr>
+                        <th>Elective Course</th>
+                        <th>Grade</th>
+                        <th>Year</th>
+                        <th>Semester</th>
+                    </tr>
+                </thead>
+                <tbody id="elective-courses-container">
+                    <!-- Dynamically added elective courses will go here -->
+                </tbody>
+            </table>
+            <button type="button" id="add-elective-course" class="btn btn-secondary">Add Another Elective</button>
+            </table>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success">Submit Study Plan</button>
+                <button type="button" class="btn btn-secondary" id="autofill-study-plan">Autofill From Completed
+                    Courses</button>
+                {% if is_tutor %}
+                <a href="{% url 'tutor_dashboard_view' %}"
+                    class="btn btn-outline-secondary back-to-dashboard-btn">Return to Tutor
+                    Dashboard</a>
+                {% else %}
+                <a href="{% url 'student_dashboard_view' %}"
+                    class="btn btn-outline-secondary back-to-dashboard-btn">Return to Student
+                    Dashboard</a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+
+    </form>
+
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            // Initialize Select2 for elective course selection
+            $('.select2').select2();
+
+            $('#add-elective-course').click(function () {
+                // Add new row for elective course selection in the table
+                $('#elective-courses-container').append(`
+                <tr class="elective-course-selection">
+                    <td>
+                        <select class="select2" name="elective_course_id[]">
+                            <option value="">Select Elective Course</option>
+                            {% for course in elective_courses %}
+                            <option value="{{ course.id }}">{{ course.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select name="elective_grade[]">
+                            <option value="">Select Grade</option>
+                            {% for value, display in grade_choices %}
+                            <option value="{{ value }}">{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <input type="number" name="elective_year[]" min="{{ current_year }}" max="{{ current_year|add:4 }}" placeholder="Year">
+                    </td>
+                    <td>
+                        <select name="elective_semester[]">
+                            <option value="">Select Semester</option>
+                            {% for value, display in semester_choices %}
+                            <option value="{{ value }}">{{ display }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                </tr>`);
+                // Reinitialize Select2 for new dropdowns
+                $('.select2').select2();
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var autofillButton = document.getElementById('autofill-study-plan');
+
+            autofillButton.addEventListener('click', function () {
+                fetch("{% url 'get_completed_courses_data' %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        data.forEach(function (item) {
+                            // Use data-name to match the course and populate its fields
+                            var gradeSelect = document.querySelector(`select[data-name="${item.course__name}"][name^="grade_"]`);
+                            var yearInput = document.querySelector(`input[data-name="${item.course__name}"][name^="year_"]`);
+                            var semesterSelect = document.querySelector(`select[data-name="${item.course__name}"][name^="semester_"]`);
+
+                            if (gradeSelect) {
+                                gradeSelect.value = item.grade;
+                            }
+                            if (yearInput) {
+                                yearInput.value = item.year;
+                            }
+                            if (semesterSelect) {
+                                semesterSelect.value = item.custom_semester;
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error:', error));
+            });
+
+        });
+    </script>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+{% endblock %}
+
+</html>

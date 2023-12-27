@@ -1,0 +1,111 @@
+{% extends 'base.html' %} 
+{% block title %}Time Slots{% endblock %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Add New Time Slot</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-success">Create Time Slot</button>
+    </form>
+    <hr>
+
+</div>
+<div class="container mt-5">
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a class="nav-link active" data-bs-toggle="tab" href="#timeSlotsTab">Time Slots</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-bs-toggle="tab" href="#assignedStudentsTab">Assigned Students</a>
+        </li>
+    </ul>
+
+<div class="tab-content mt-3">
+    <div id="timeSlotsTab" class="tab-pane fade show active">
+            <h1>My Time Slots</h1>
+    <!-- Timeslot list -->
+    <div class="list-group">
+        {% for timeslot in timeslots %}
+        <div class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ timeslot.tutor.get_full_name }}</h5>
+                <small>
+    {% if timeslot.is_booked %}
+    Booked by {{ timeslot.appointment.student.get_full_name }} - {{ timeslot.status | default:"Pending" }}
+    {% if timeslot.status == 'pending' %}
+    <form method="post" action="{% url 'appointment_booking:mark_as_done' timeslot.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success btn-sm mt-2">Mark as Done</button>
+    </form>
+    {% endif %}
+    {% else %}
+    Available
+    {% endif %}
+</small>
+            </div>
+            <p class="mb-1">From: {{ timeslot.start_time | date:"N j, Y, P" }}</p>
+            <p class="mb-1">To: {{ timeslot.end_time | date:"N j, Y, P" }}</p>
+
+            {% if request.user == timeslot.tutor %}
+            <form method="post" action="{% url 'appointment_booking:delete_time_slot' timeslot.id %}"
+                style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm mt-2"
+                    onclick="return confirm('Are you sure you want to delete this time slot?');">Delete</button>
+            </form>
+            {% endif %}
+        </div>
+        {% empty %}
+        <div class="list-group-item">No available time slots at the moment.</div>
+        {% endfor %}
+    </div>
+    <!-- Pagination Controls -->
+    <nav aria-label="Time slots pagination">
+        <ul class="pagination">
+            {% if timeslots.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ timeslots.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in timeslots.paginator.page_range %}
+            {% if timeslots.number == num %}
+            <li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% else %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if timeslots.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ timeslots.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+<div id="assignedStudentsTab" class="tab-pane fade">
+    <h1>Assigned Students and Meeting Counts</h1>
+    <div class="list-group">
+        {% for student, count in student_meeting_counts.items %}
+        <div class="list-group-item">
+            <h5>{{ student.get_full_name }}</h5>
+            <p>Email: {{ student.email }}</p>
+            <p>Completed Meetings: {{ count }}</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{% endblock %}

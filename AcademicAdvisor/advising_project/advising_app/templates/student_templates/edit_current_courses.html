@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Edit Current Courses{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Current Courses</title>
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div class="container mt-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h1>Edit Current Courses</h1>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'edit_current_courses' %}">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger" role="alert">
+                        {{ form.non_field_errors }}
+                    </div>
+                    {% endif %}
+
+                    {% for field in form %}
+                    <div class="mb-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field.as_widget }}
+                        {% if field.errors %}
+                        <div class="alert alert-danger">{{ field.errors.as_text }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <input type="submit" value="Save changes" class="btn btn-outline-info " />
+                        <a href="{% url 'student_dashboard_view' %}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                </form>
+
+                <!-- Current Courses Table -->
+                <div class="mt-4">
+                    <h2>Current Courses</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Code</th>
+                                <th scope="col">Name</th>
+                                <th scope="col">Credits</th>
+                                <th scope="col">Semester</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in current_courses %}
+                            <tr>
+                                <td>{{ course.course.course_code }}</td>
+                                <td>{{ course.course.name }}</td>
+                                <td>{{ course.course.course_credits }}</td>
+                                <td>{{ course.semester }}</td>
+                                <td>
+                                    <a href="{% url 'delete_current_course' course.id %}"
+                                        class="btn btn-danger">Delete</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#id_required_courses, #id_elective_courses').select2({
+                placeholder: "Select courses",
+                allowClear: true
+            });
+        });
+    </script>
+</body>
+{% endblock %}
+
+</html>

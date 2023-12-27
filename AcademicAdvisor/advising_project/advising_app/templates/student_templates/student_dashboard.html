@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard</title>
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+    .form-select {
+        display: block;
+        width: 50%; 
+        padding: 0.375rem 1.25rem 0.375rem 0.75rem; 
+        font-size: 1rem; 
+        line-height: 1.5; 
+        color: #495057; 
+        background-color: #fff; 
+        border: 1px solid #ced4da; 
+        border-radius: 0.25rem; 
+        -webkit-appearance: none; 
+        -moz-appearance: none; 
+        appearance: none; 
+    }
+    .form-select:focus {
+        border-color: #80bdff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25); 
+    }
+    .form-section {
+        margin-bottom: 20px; 
+    }
+
+.progress {
+        height: 30px; 
+    }
+    .progress-bar {
+    font-weight: bold;
+    width: 0; 
+    transition: width 2s ease;
+}
+
+    </style>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+</head>
+
+<body>
+
+    <div class="container my-5">
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <div class="text-center mb-4">
+            {% if not is_tutor_viewing %}
+            <h1>Welcome back, {{ student_name }}!</h1>
+            {% else %}
+            <h1>{{ student.get_full_name }}'s Profile</h1>
+            {% endif %}
+        </div>
+
+<div class="container my-7">
+        <div class="row mb-3">
+        <div class="col-lg-6 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title d-flex justify-content-center">Student Profile</h5>
+                        <p class="card-text"><strong>School:</strong> {{ student_profile.school.name }}</p>
+                        <p class="card-text"><strong>Major:</strong> {{ student_profile.major.name }}</p>
+                        <p class="card-text">
+                            <strong>Scholarship Student:</strong>
+                            {{ student_profile.is_scholarship_student|yesno:"Yes,No" }}
+                        </p>
+                        {% if not is_tutor_viewing %}
+                <a href="{% url 'update_student_profile' %}" class="btn btn-outline-info mt-3">Edit Major/School</a>
+                {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        {% if not is_tutor_viewing %}
+
+        <div class="col-lg-6 mb-3 ">
+            <div class="card border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success d-flex justify-content-center">Keep track of your completed courses!</h5>
+                    <p class="card-text mt-3">Update your completed courses information before you submit your study plan.</p>
+                    <p class="card-text mt-3">Set your grade for the course you have completed.</p>
+                    <a href="{% url 'completed_courses' %}" class="btn btn-outline-success mt-3">Completed Courses</a>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        {% endif %}
+
+            <div class="row mb-3 justify-content-center">
+        <div class="col-lg-10 mb-3">
+            {% if tutor %}
+            <div class="alert alert-info" role="alert">
+                <div class="text-center ">
+                    <h5 class="card-title">Academic Advisor Information</h5>
+                    <p class="card-text">Your assigned Academic Advisor: <a href="{% url 'tutor_profile_view' tutor.id %}">{{tutor.get_full_name }}</a></p>
+                </div>
+            </div>
+
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+                You have not been assigned an Academic Advisor yet.
+            </div>
+            {% endif %}
+        </div>
+
+        
+{% if is_tutor_viewing %}
+<a href="{% url 'tutor_view_study_plan' student.id %}" class="btn btn-primary">View Study Plan</a>
+{% endif %}
+
+</div>
+
+        
+<!-- Form Section -->
+<div class="form-section card shadow mb-5">
+    <div class="card-header py-3">
+        <h4 class="m-0 font-weight-bold text-center text-primary">Display Your Yearly Structure</h4>
+    </div>
+        <div class="card-body">
+    {% if not is_tutor_viewing %}
+    <!-- For students -->
+    <form method="post" action="{% url 'student_dashboard_view' %}" class="p-3">
+        {% csrf_token %}
+        <div class="mb-3 ">
+            {{ yearly_structure_form.year.label_tag }}
+            <select class="form-select custom-select" id="year-select" name="{{ yearly_structure_form.year.html_name }}">
+                {% for choice in yearly_structure_form.year.field.choices %}
+                {% if choice.0|stringformat:"s" == yearly_structure_form.year.value|stringformat:"s" %}
+                <option value="{{ choice.0 }}" selected>{{ choice.1 }}</option>
+                {% else %}
+                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3 ">
+            {{ yearly_structure_form.semester.label_tag }}
+            <select class="form-select custom-select" id="semester-select" name="{{ yearly_structure_form.semester.html_name }}">
+                {% for choice in yearly_structure_form.semester.field.choices %}
+                {% if choice.0|stringformat:"s" == yearly_structure_form.semester.value|stringformat:"s" %}
+                <option value="{{ choice.0 }}" selected>{{ choice.1 }}</option>
+                {% else %}
+                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+            <div class="button-container mb-4">
+            <button type="submit" name="yearly_structure" class="btn btn-primary">Show Structure</button>
+        </div>
+        </div> 
+         </form>
+            </div>
+
+    {% else %}
+    <!-- For tutors -->
+    <form method="post" action="{% url 'tutor_student_dashboard_view' student.id %}">
+        {% csrf_token %}
+        <div class="form-group mb-3">
+            {{ yearly_structure_form.year.label_tag }}
+            <select class="form-select" id="year-select-tutor" name="{{ yearly_structure_form.year.html_name }}">
+                {% for choice in yearly_structure_form.year.field.choices %}
+                {% if choice.0|stringformat:"s" == yearly_structure_form.year.value|stringformat:"s" %}
+                <option value="{{ choice.0 }}" selected>{{ choice.1 }}</option>
+                {% else %}
+                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group mb-3">
+            {{ yearly_structure_form.semester.label_tag }}
+            <select class="form-select" id="semester-select-tutor" name="{{ yearly_structure_form.semester.html_name }}">
+                {% for choice in yearly_structure_form.semester.field.choices %}
+                {% if choice.0|stringformat:"s" == yearly_structure_form.semester.value|stringformat:"s" %}
+                <option value="{{ choice.0 }}" selected>{{ choice.1 }}</option>
+                {% else %}
+                <option value="{{ choice.0 }}">{{ choice.1 }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" name="yearly_structure" class="btn btn-primary">Show Structure</button>
+    </form>
+    {% endif %}
+    </div>
+
+<!-- Course Structure Table -->
+{% if structured_courses %}
+<h3>Structure for year {{ yearly_structure_form.cleaned_data.year }} and {{ yearly_structure_form.cleaned_data.semester}}</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Course Name</th>
+            <th>Course Code</th>
+            <th>Credits</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for course in structured_courses %}
+        <tr>
+            <td>{{ course.name }}</td>
+            <td>{{ course.course_code }}</td>
+            <td>{{ course.course_credits }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+        <section class="current-courses mt-4">
+            {% if current_courses %}
+            {% with current_courses.first as first_course %}
+            <h2>Your Current Courses for {{ current_year }} {{ first_course.semester }}</h2>
+            {% endwith %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Code</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Credits</th>
+                        <th scope="col">Semester</th>
+                        <th scope="col">Mark as completed!</th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for current in current_courses %}
+                    <tr id="course-row-{{ current.id }}">
+                        <td>{{ current.course.course_code }}</td>
+                        <td>{{ current.course.name }}</td>
+                        <td>{{ current.course.course_credits }}</td>
+                        <td>{{ current.semester }}</td>
+                        <td>
+                            <form method="post" action="{% url 'complete_course' current.id %}">
+
+                                {% csrf_token %}
+                                            {% if not is_tutor_viewing %}
+                                            <button type="button" class="btn btn-success finish-course" data-courseid="{{ current.id }}"
+                                                data-ajaxurl="{% url 'complete_course' 0 %}">
+                                                Finish
+                                            </button>                                          
+                                            {% endif %}
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <h2>Current Courses</h2>
+            <p>You are not currently enrolled in any courses.</p>
+            {% endif %}
+        </section>
+
+        <div class="mb-4">
+            {% if not is_tutor_viewing %}
+            <a href="{% url 'edit_current_courses' %}" class="btn btn-primary">Edit Current Courses</a>
+            
+            {% else %}
+            <a href="{% url 'tutor_view_completed_courses' student.id %}" class="btn btn-outline-info">View Completed
+                Courses</a>
+            {% endif %}
+        </div>
+
+        <div class="card border-secondary mb-3">
+            <div class="card-header bg-light">
+                {% if not is_tutor_viewing %}
+                <!-- This message will be shown to students -->
+                <h4 id="progress-percentage-text" class="mb-0 d-flex justify-content-center">
+                    You have completed {{ progress_percentage|floatformat:2 }}% Towards Graduation
+                </h4>
+                {% else %}
+                <!-- This message will be shown to tutors -->
+                <h4 class="mb-0 d-flex justify-content-center">{{ student.get_full_name }} has completed {{ progress_percentage|floatformat:2 }}% Towards
+                    Graduation</h4>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="progress mb-4">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar"
+                        aria-valuenow="{{ progress_percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100"
+                        style="width: {{ progress_percentage }}%;">
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center">
+                    {% if not is_tutor_viewing %}
+                    <a href="{% url 'calculate_remaining_courses' %}" class="btn btn-primary">View Remaining Courses</a>
+                    {% else %}
+                    <a href="{% url 'tutor_view_remaining_courses' student_id=student.id %}" class="btn btn-primary">View Remaining Courses</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% if not is_tutor_viewing %}
+
+        <form method="post" action="{% url 'user_logout' %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Log Out</button>
+        </form>
+        {% else %}
+            <a href="{% url 'tutor_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to Tutor
+                Dashboard</a>
+
+    </div>
+        {% endif %}
+
+
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+<script src="{% static 'js/custom_script.js' %}"></script>
+
+</html>
+
+{% endblock %}

@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% block title %}Study Plan{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Study Plan</title>
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        h1,
+        h2 {
+            color: #333;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .table thead th {
+            background-color: #007BFF;
+            color: white;
+        }
+
+        @media print {
+            body {
+                font-family: Arial, sans-serif;
+            }
+
+            .navbar,
+            .print-hide,
+            footer,
+            .btn {
+                display: none;
+                /* Hide elements during printing */
+            }
+
+            .study-plan-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                border: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container study-plan-container">
+        <h1>Study Plan for {{ student.get_full_name }}</h1>
+    {% if messages %}
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+        {% if study_plan %}
+        <div class="course-section">
+
+            <!-- Compulsory Courses Section -->
+            <h2>Compulsory Courses</h2>
+            {% if compulsory_courses_entries %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Grade</th>
+                            <th>Year Taken</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in compulsory_courses_entries %}
+                        <tr>
+                            <td>{{ entry.course.name }}</td>
+                            <td>{{ entry.grade }}</td>
+                            <td>{{ entry.year_taken }}</td>
+                            <td>{{ entry.semester }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No compulsory courses.</p>
+            {% endif %}
+
+            <!-- Major Courses Section -->
+            <h2>Major Courses</h2>
+            {% if major_courses_entries %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Grade</th>
+                            <th>Year Taken</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in major_courses_entries %}
+                        <tr>
+                            <td>{{ entry.course.name }}</td>
+                            <td>{{ entry.grade }}</td>
+                            <td>{{ entry.year_taken }}</td>
+                            <td>{{ entry.semester }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No major courses.</p>
+            {% endif %}
+
+            <!-- National Requirement Courses Section -->
+            <h2>National Requirement Courses</h2>
+            {% if national_requirement_courses_entries %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Grade</th>
+                            <th>Year Taken</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in national_requirement_courses_entries %}
+                        <tr>
+                            <td>{{ entry.course.name }}</td>
+                            <td>{{ entry.grade }}</td>
+                            <td>{{ entry.year_taken }}</td>
+                            <td>{{ entry.semester }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No national requirement courses.</p>
+            {% endif %}
+
+            <!-- English Courses Section -->
+            <h2>English Courses</h2>
+            {% if english_courses_entries %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Grade</th>
+                            <th>Year Taken</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in english_courses_entries %}
+                        <tr>
+                            <td>{{ entry.course.name }}</td>
+                            <td>{{ entry.grade }}</td>
+                            <td>{{ entry.year_taken }}</td>
+                            <td>{{ entry.semester }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No English courses.</p>
+            {% endif %}
+
+
+            <!-- Elective Courses Section -->
+            <h2>Elective Courses</h2>
+            {% if elective_courses_entries %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Course</th>
+                            <th>Grade</th>
+                            <th>Year Taken</th>
+                            <th>Semester</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in elective_courses_entries %}
+                        <tr>
+                            <td>{{ entry.course.name }}</td>
+                            <td>{{ entry.grade }}</td>
+                            <td>{{ entry.year_taken }}</td>
+                            <td>{{ entry.semester }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p>No elective courses.</p>
+            {% endif %}
+        </div>
+
+        <div class="text-center">
+            <button onclick="printStudyPlan()" class="btn btn-success">Print Study Plan</button>
+
+            {% else %}
+            <p class="no-courses">No study plan submitted yet.</p>
+            {% endif %}
+            <a href="{% url 'study_plan_view' %}" class="btn btn-info">Edit Study Plan</a>
+            {% if is_tutor %}
+            <a href="{% url 'tutor_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to
+                Tutor Dashboard</a>
+            {% else %}
+            <a href="{% url 'student_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return
+                to Student Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+
+</html>
+<script>
+    function printStudyPlan() {
+        window.print();
+    }
+</script>
+{% endblock %}

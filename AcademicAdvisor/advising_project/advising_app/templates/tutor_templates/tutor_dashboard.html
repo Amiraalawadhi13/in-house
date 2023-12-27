@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% block title %}Academic Advisor Dashboard{% endblock %}
+
+<!DOCTYPE html>
+<html lang="en">
+{% block content %}
+<head>
+    <meta charset="UTF-8">
+    <title>Tutor Dashboard</title>
+    {% load static %}
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+    
+        .card-header {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+    
+    </style>
+    <body>
+    <div class="container mt-5">
+        <div class="header-section">
+            <h1>Academic Advisor Dashboard</h1>
+            <h2>Welcome back, {{ tutor_name }}!</h2>
+        </div>
+    
+        <!-- Profile Information Section -->
+        <div class="row">
+            <div class="col-lg-12 mb-4">
+                <div class="card card-custom">
+                    <div class="card-header">
+                        <h4>Academic Advisor Profile Information</h4>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row">
+                            <dt class="col-sm-3">Location:</dt>
+                            <dd class="col-sm-9">{{ tutor_profile.location }}</dd>
+    
+                            <dt class="col-sm-3">Contact Email:</dt>
+                            <dd class="col-sm-9">{{ contact_email }}</dd>
+    
+                            <dt class="col-sm-3">Working Hours:</dt>
+                            <dd class="col-sm-9">
+                                {% if tutor_profile.start_time and tutor_profile.end_time %}
+                                From {{ tutor_profile.start_time|date:"H:i" }} to {{ tutor_profile.end_time|date:"H:i" }}
+                                {% else %}
+                                Not specified
+                                {% endif %}
+                            </dd>
+                        </dl>
+                        <a href="{% url 'update_tutor_profile' %}" class="btn btn-outline-primary">Edit Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Assigned Students Section -->
+        <div class="row">
+            <div class="col-lg-8 mb-4">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h3>Your assigned students:</h3>
+                        {% if assigned_students %}
+                        <ul class="list-group list-group-flush">
+                            {% for student_detail in assigned_students|slice:":5" %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ student_detail.student.get_full_name }}
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                    onclick="redirectToMessagePage({{ student_detail.student.id }})">Message</button>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        <a href="{% url 'tutor_students_list' %}" class="btn btn-primary dashboard-btn">View All
+                            Students</a>
+                        {% else %}
+                        <p>You currently have no assigned students.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Messages Section -->
+            <div class="col-lg-4">
+                <div class="card card-custom">
+                    <div class="card-body">
+                        <h3>Messages</h3>
+                        <p id="no-unread-messages" style="{% if unread_messages_count > 0 %}display: none;{% endif %}">
+                            You don't have any new messages.
+                        </p>
+                        <p id="unread-messages-info" style="{% if unread_messages_count == 0 %}display: none;{% endif %}">
+                            You have <a href="{% url 'inbox' %}">
+                                <span id="unread-messages-count">{{ unread_messages_count }}</span>
+                                unread message{{ unread_messages_count|pluralize }}
+                            </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    
+    <!-- Upcoming Meetings Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card card-custom">
+                <div class="card-body">
+                    <h3>Upcoming Meetings</h3>
+                    <ul class="list-group">
+                        {% for appointment in pending_appointments %}
+                        <li class="list-group-item">
+                            {{ appointment.timeslot.start_time|date:"D, d M Y H:i" }} -
+                            {{ appointment.timeslot.end_time|date:"H:i" }} with
+                            {{ appointment.student.get_full_name }}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item">No upcoming meetings.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+        <!-- Log Out Section -->
+        <div class="mt-4 text-center">
+            <form method="post" action="{% url 'user_logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-lg">Log Out</button>
+            </form>
+        </div>
+    </div>
+    <script src="{% static 'js/custom_script.js' %}"></script>
+    <script>
+        // Pass the necessary data to your JavaScript when the page loads
+        CustomScript.initTutorDashboard({
+            fetchUnreadMessagesUrl: "{% url 'get_unread_messages_count' %}",
+            sendMessageUrlTemplate: "{% url 'send_message' %}?recipient_id={id}"
+        });
+    </script>
+    </body>
+    {% endblock %}
+    
+    </html>

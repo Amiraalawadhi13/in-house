@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% block title %}Academic Advisor Profile{% endblock %}
+{% block content %}
+<style>
+    /* Global Styles */
+    body {
+        background-color: #f5f5f5; /* Lighter background for the whole page */
+    }
+    
+    /* Profile Container */
+    .profile-container {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        margin-top: 30px;
+    }
+    
+    /* Header Styles */
+    .card-header {
+        background: linear-gradient(45deg, #772e2e, #a35858);
+        color: white;
+        padding: 1rem 0;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    /* Title Styles */
+    .card-title {
+        color: white; /* For better readability */
+        font-weight: bold;
+        font-size: 1.75rem;
+    }
+    
+    /* Body Styles */
+    .card-body {
+        padding: 2rem;
+        position: relative;
+    }
+    
+    /* Detail Styles */
+    .detail-text {
+        color: #495057;
+    }
+    
+    /* Working Hours Styles */
+    .working-hours h5 {
+        color: #772e2e; /* Harmonizing with the header color */
+        margin-bottom: 0.5rem;
+    }
+    
+    .badge-custom {
+        background-color: #FFC75F;
+        color: white;
+        font-weight: bold;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+    }
+    
+    /* Send Message Button Styles */
+    .btn-outline-primary {
+        border-color: #772e2e;
+        color: #772e2e;
+        margin-top: 1rem;
+        padding: 0.5rem 1.5rem;
+    }
+    
+    .btn-outline-primary:hover {
+        background: #772e2e;
+        color: white;
+    }
+    
+    /* Back to Dashboard Button Styles */
+    .back-to-dashboard-btn {
+        display: block;
+        margin-top: 1rem;
+        color: #495057;
+        border-color: #6c757d;
+    }
+    
+   
+    
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 mb-5"> <!-- Bottom margin for the whole card -->
+            <div class="profile-container bg-white shadow rounded-lg py-4 px-3">
+                <!-- Padding and shadow for the profile container -->
+                <div class="card-header bg-primary text-white text-center rounded-top py-3 mb-4">
+                    <!-- Added margin-bottom -->
+                    <h2 class="card-title mb-0">Academic Advisor Profile</h2> <!-- Remove bottom margin from title -->
+                </div>
+                <div class="card-body">
+                    <h3 class="text-center mb-4">{{ tutor.get_full_name }}</h3> <!-- Keep margins for separation -->
+                    <div class="mb-3"><strong>Email:</strong> <span class="detail-text">{{ tutor.email }}</span></div>
+                    <div class="mb-3"><strong>Contact Email:</strong> <span class="detail-text">{{tutor_profile.contact_email }}</span></div>
+                    <div class="mb-3"><strong>Location:</strong> <span class="detail-text">{{ tutor_profile.location}}</span></div>
+                    <div class="working-hours text-center mb-4">
+                        <h5 class="mb-2">Working Hours</h5>
+                        {% if tutor_profile.start_time and tutor_profile.end_time %}
+                        <span class="badge badge-custom mb-2">{{ tutor_profile.start_time|date:"H:i" }}</span> - <span
+                            class="badge badge-custom">{{ tutor_profile.end_time|date:"H:i" }}</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Not specified</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center mb-4"> <!-- Centering and adding bottom margin -->
+                        <button type="button" class="btn btn-outline-primary mb-2"
+                            onclick="redirectToMessagePage({{ tutor.id }})">Send Message</button>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+        <a href="{% url 'student_dashboard_view' %}" class="btn btn-outline-primary ">Return to Student Dashboard</a>
+    </div>
+</div>
+
+<script>
+    function redirectToMessagePage(tutorId) {
+        const url = new URL('{% url 'send_message' %}', window.location.origin);
+        url.searchParams.append('recipient_id', tutorId);
+        window.location.href = url.href;
+    }
+</script>
+{% endblock %}
+
