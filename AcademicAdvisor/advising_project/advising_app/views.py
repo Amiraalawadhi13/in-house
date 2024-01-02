@@ -188,20 +188,36 @@ def course_detail(request, course_id):
 
     })
 
+from django.core.serializers import serialize
+
+@login_required
 def search(request):
-    query = request.GET.get('q')
-    year_filter = request.GET.get('year')
-    semester_filter = request.GET.get('semester')
-    credits_filter = request.GET.get('credits')
-    is_tutor = not request.user.is_student  
+    query = request.GET.get('q', '')
+    year_filter = request.GET.get('year', '')
+    semester_filter = request.GET.get('semester', '')
+    credits_filter = request.GET.get('credits', '')
+    school_filter = request.GET.get('school', '')
+    major_filter = request.GET.get('major', '')
+    is_tutor = not request.user.is_student
 
-    majors_query = Major.objects.all()
-    if query:
-        majors_query = majors_query.filter(Q(name__icontains=query) | Q(major_code__icontains=query))
-
+    # Initialize queries
+    schools_query = School.objects.all() if not school_filter else School.objects.filter(id=school_filter)
+    majors_query = Major.objects.all() if not major_filter else Major.objects.filter(id=major_filter)
     courses_query = Course.objects.all()
+
+    # Apply general search query if provided
     if query:
+        schools_query = schools_query.filter(name__icontains=query)
+        majors_query = majors_query.filter(Q(name__icontains=query) | Q(major_code__icontains=query))
         courses_query = courses_query.filter(Q(name__icontains=query) | Q(course_code__icontains=query))
+
+    # Apply filters if provided
+    if school_filter:
+        majors_query = majors_query.filter(school__id=school_filter)
+        courses_query = courses_query.filter(major__school__id=school_filter)
+
+    if major_filter:
+        courses_query = courses_query.filter(major__id=major_filter)
 
     if year_filter:
         courses_query = courses_query.filter(year=year_filter)
@@ -212,15 +228,41 @@ def search(request):
     if credits_filter:
         courses_query = courses_query.filter(course_credits=credits_filter)
 
+    # Ensure courses are unique
+    courses_query = courses_query.distinct()
+
+    # Check if the request is AJAX
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Serialize your querysets as JSON
+        schools_data = serialize('json', schools_query)
+        majors_data = serialize('json', majors_query)
+        courses_data = serialize('json', courses_query)
+
+        # Return the JSON response
+        return JsonResponse({
+            'schools': schools_data,
+            'majors': majors_data,
+            'courses': courses_data
+        })
+
+    # If it's not an AJAX request, render the full page as usual
     context = {
-        'schools': School.objects.filter(name__icontains=query) if query else None,
+        'query': query,
+        'schools': schools_query,
         'majors': majors_query,
         'courses': courses_query,
-        'query': query,
-        'is_tutor': is_tutor  
+        'year_filter': year_filter,
+        'semester_filter': semester_filter,
+        'credits_filter': credits_filter,
+        'school_filter': school_filter,
+        'major_filter': major_filter,
+        'selected_school_name': schools_query.first().name if school_filter and schools_query.exists() else "",
+        'selected_major_name': majors_query.first().name if major_filter and majors_query.exists() else "",
+        'is_tutor': is_tutor
     }
 
     return render(request, 'search_results.html', context)
+
 
 
 def autocomplete(request):
@@ -235,7 +277,7 @@ def autocomplete(request):
     for major in majors:
         results.append({'label': major.name, 'category': 'Majors'})
     for course in courses:
-        results.append({'label': f'{course.name} ({course.course_code})', 'category': 'Courses'})
+        results.append({'label':course.name, 'category': 'Courses'})
 
     return JsonResponse(results, safe=False)
 
@@ -804,18 +846,24 @@ def tutor_view_completed_courses(request, student_id):
 
 @login_required
 def tutor_view_study_plan(request, student_id):
-    # Fetch the student and ensure they are actually a student
-    student = get_object_or_404(CustomUser, pk=student_id,)
-    # Fetch the study plan for the student, if it exists
-    study_plan = StudyPlan.objects.filter(user=student,year=timezone.now().year).first()
+    student = get_object_or_404(CustomUser, pk=student_id)
+    study_plan = StudyPlan.objects.filter(user=student, year=timezone.now().year).first()
+    
+    # Initialize all course entries lists
     compulsory_courses_entries = []
     elective_courses_entries = []
-
+    major_courses_entries = []
+    national_requirement_courses_entries = []
+    
     if study_plan:
         entries = StudyPlanEntry.objects.filter(study_plan=study_plan).select_related('course')
         compulsory_courses_entries = [entry for entry in entries if entry.course.course_type == 'compulsory']
         elective_courses_entries = [entry for entry in entries if entry.course.course_type == 'elective']
         major_courses_entries = [entry for entry in entries if entry.course.course_type == 'major']
+        national_requirement_courses_entries = [entry for entry in entries if entry.course.course_type == 'national_requirement']
+    else:
+        # Set a message to be displayed in the template if there is no study plan
+        messages.info(request, "Student has not submitted a study plan.")
 
     context = {
         'student': student,
@@ -823,8 +871,10 @@ def tutor_view_study_plan(request, student_id):
         'compulsory_courses_entries': compulsory_courses_entries,
         'elective_courses_entries': elective_courses_entries,
         'major_courses_entries': major_courses_entries,
+        'national_requirement_courses_entries': national_requirement_courses_entries,
         'is_tutor_viewing': True,
     }
+    
     return render(request, 'view_study_plan.html', context)
 
 @login_required

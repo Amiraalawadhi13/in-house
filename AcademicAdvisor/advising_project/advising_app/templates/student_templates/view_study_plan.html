@@ -1,15 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Study Plan{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
+
 {% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Study Plan</title>
-    {% load static %}
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <style>
         h1,
         h2 {
@@ -45,7 +39,6 @@
             }
         }
     </style>
-</head>
 
 <body>
     <div class="container study-plan-container">
@@ -217,20 +210,20 @@
             {% else %}
             <p class="no-courses">No study plan submitted yet.</p>
             {% endif %}
-            <a href="{% url 'study_plan_view' %}" class="btn btn-info">Edit Study Plan</a>
-            {% if is_tutor %}
+            
+            {% if is_tutor_viewing %}
             <a href="{% url 'tutor_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return to
                 Tutor Dashboard</a>
             {% else %}
+            
+            <a href="{% url 'study_plan_view' %}" class="btn btn-info">Edit Study Plan</a>
             <a href="{% url 'student_dashboard_view' %}" class="btn btn-outline-secondary back-to-dashboard-btn">Return
                 to Student Dashboard</a>
             {% endif %}
         </div>
     </div>
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 
-</html>
 <script>
     function printStudyPlan() {
         window.print();

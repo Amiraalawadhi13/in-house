@@ -1,3 +1,5 @@
+from email.mime.text import MIMEText
+import smtplib
 from django.contrib import messages
 from django.urls import reverse
 from .models import TimeSlot, Appointment
@@ -10,6 +12,8 @@ from django.shortcuts import get_object_or_404, redirect
 from .models import TimeSlot
 from appointment_booking.models import TimeSlot
 from django.core.paginator import Paginator
+from email.message import EmailMessage
+from django.conf import settings
 
 @login_required
 def time_slot_list(request):
@@ -94,6 +98,23 @@ def book_timeslot(request, timeslot_id):
         timeslot=timeslot, 
         student=request.user,
     )
+    message = EmailMessage();
+
+    message['Subject'] = "Appointment confirmation" 
+    message['From'] = settings.EMAIL_HOST_USER  
+    message['To'] = request.user.email,
+    message.set_content(  'Dear Sutdent,\n\nAppointment booked !!\n\nYour appointment with your academic advisor has been booked.\n\nStart: ' + timeslot.start_time.strftime('%a %d %b %Y, %I:%M%p') +'\n\nEnd:'+timeslot.end_time.strftime('%a %d %b %Y, %I:%M%p')+'\n\nkind regards,\nBooking system');  
+    
+    with smtplib.SMTP(settings.EMAIL_HOST, 587) as server:
+        server.ehlo()
+        server.starttls()
+        server.ehlo()
+        server.ehlo()
+        server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD, initial_response_ok=True) 
+        server.ehlo()
+        server.sendmail(settings.EMAIL_HOST_USER, request.user.email,message.as_string())
+        print('Email sent!')
+        server.close();
     messages.success(request, "Appointment booked successfully.")
 
     return redirect('appointment_booking:student_tutor_timeslots')

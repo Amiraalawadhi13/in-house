@@ -94,7 +94,9 @@ $(document).ready(function () {
                 });
             },
             select: function (event, ui) {
-                window.location.href = searchUrl + '?q=' + encodeURIComponent(ui.item.label);
+                // Extract only the course name before the course code in parentheses
+                var courseName = ui.item.label.split(" (")[0];
+                window.location.href = searchUrl + '?q=' + encodeURIComponent(courseName);
             }
         }).autocomplete("instance")._renderItem = function (ul, item) {
             return $("<li>")
@@ -108,6 +110,62 @@ $(document).ready(function () {
     });
 });
 
+document.addEventListener('DOMContentLoaded', function () {
+    var searchForm = document.getElementById('search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent the traditional form submission
+
+            // Collect the data from the form
+            var formData = new FormData(searchForm);
+            var searchParams = new URLSearchParams(formData).toString();
+
+            // Perform the AJAX request
+            fetch(searchForm.action + '?' + searchParams, {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'  // Important for Django to recognize AJAX
+                }
+            })
+                .then(response => response.json()) // Parse the JSON returned from the server
+                .then(data => {
+                    // Now you have your data, you can update the DOM however you like.
+                    // This is just an example:
+                    updateSearchResults(data);
+                    searchForm.reset(); // Resets the form fields if needed
+                })
+                .catch(error => console.error('Error:', error));
+        });
+    }
+});
+
+function updateSearchResults(data) {
+    // Assuming you have divs with ids 'schools', 'majors', and 'courses' for your results
+    const schoolsDiv = document.getElementById('schools');
+    const majorsDiv = document.getElementById('majors');
+    const coursesDiv = document.getElementById('courses');
+
+    // Clear previous results
+    schoolsDiv.innerHTML = '';
+    majorsDiv.innerHTML = '';
+    coursesDiv.innerHTML = '';
+
+    // Parse the JSON data and update the DOM
+    const schools = JSON.parse(data.schools);
+    schools.forEach(school => {
+        schoolsDiv.innerHTML += `<div>${school.fields.name}</div>`;  // Modify as needed
+    });
+
+    const majors = JSON.parse(data.majors);
+    majors.forEach(major => {
+        majorsDiv.innerHTML += `<div>${major.fields.name}</div>`;  // Modify as needed
+    });
+
+    const courses = JSON.parse(data.courses);
+    courses.forEach(course => {
+        coursesDiv.innerHTML += `<div>${course.fields.name} - ${course.fields.course_code}</div>`;  // Modify as needed
+    });
+}
 
 $(document).ready(function () {
     // Check if the successAlert exists in the current document

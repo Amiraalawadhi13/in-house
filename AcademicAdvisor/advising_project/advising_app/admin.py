@@ -65,12 +65,14 @@ class UserRoleFilter(SimpleListFilter):
         )
 
     def queryset(self, request, queryset):
-        if self.value() == 'student':
+        role_value = self.value()
+        if role_value == 'student':
             return queryset.filter(is_student=True)
-        elif self.value() == 'tutor':
+        elif role_value == 'tutor':
             return queryset.filter(is_tutor=True)
-        elif self.value() == 'admin':
+        elif role_value == 'admin':
             return queryset.filter(is_admin=True)
+        return queryset
 
 class StudentProfileInline(admin.StackedInline):
     model = StudentProfile

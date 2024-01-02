@@ -1,15 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}Student Dashboard{% endblock %}
 
-<!DOCTYPE html>
-<html lang="en">
+
 {% block content %}
 
-<head>
-    <meta charset="UTF-8">
-    <title>Student Dashboard</title>
-    {% load static %}
-    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+
     <style>
     .form-select {
         display: block;
@@ -44,7 +39,6 @@
 
     </style>
     <meta name="csrf-token" content="{{ csrf_token }}">
-</head>
 
 <body>
 
@@ -320,12 +314,5 @@
 
     </div>
         {% endif %}
-
-
-    <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
-<script src="{% static 'js/custom_script.js' %}"></script>
-
-</html>
-
 {% endblock %}

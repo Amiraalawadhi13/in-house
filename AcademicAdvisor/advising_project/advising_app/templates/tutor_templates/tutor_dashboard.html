@@ -140,6 +140,13 @@
             sendMessageUrlTemplate: "{% url 'send_message' %}?recipient_id={id}"
         });
     </script>
+    <script>
+        function redirectToMessagePage(studentId) {
+            // Assuming your server-side URL named 'send_message' expects a 'recipient_id' parameter
+            const sendMessageUrlTemplate = "{% url 'send_message' %}?recipient_id=" + studentId;
+            window.location.href = sendMessageUrlTemplate;
+        }
+    </script>
     </body>
     {% endblock %}
     
